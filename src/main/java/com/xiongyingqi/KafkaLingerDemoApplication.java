@@ -47,7 +47,9 @@ public class KafkaLingerDemoApplication {
                         }
                         pull.forEach(x -> {
                             String value = x.value();
-                            System.err.println("value === " + value);
+                            Long time = Long.parseLong(value);
+                            Long useTime = System.currentTimeMillis() - time;
+                            System.err.println("consume value === " + value + " use time: " + useTime);
                         });
                     }
                 }
@@ -67,8 +69,9 @@ public class KafkaLingerDemoApplication {
                         executorService.execute(new Runnable() {
                             @Override
                             public void run() {
-                                kafkaQueue.push(finalI + "");
-                                System.out.println("sent: " + finalI);
+                                long l = System.currentTimeMillis();
+                                kafkaQueue.push(l + "");
+                                System.out.println("sent: " + l);
                             }
                         });
                     }).start();
