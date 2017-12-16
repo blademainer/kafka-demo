@@ -222,3 +222,5 @@ fabric.properties
 
 # Visio autosave temporary files
 *.~vsd*
+
+rebel.xml
