@@ -49,7 +49,7 @@ public class KafkaLingerDemoApplication {
                             String value = x.value();
                             Long time = Long.parseLong(value);
                             Long useTime = System.currentTimeMillis() - time;
-                            System.err.println("consume value === " + value + " use time: " + useTime);
+                            System.err.println("Thread: " + Thread.currentThread().getName() + "consume value === " + value + " use time: " + useTime);
                         });
                     }
                 }
@@ -58,7 +58,7 @@ public class KafkaLingerDemoApplication {
 
 
         Scanner scanner = new Scanner(System.in);
-        while(scanner.hasNext()){
+        while (scanner.hasNext()) {
             String next = scanner.next();
             int i1 = 0;
             try {
