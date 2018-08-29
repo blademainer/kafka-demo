@@ -35,6 +35,7 @@ public class KafkaLingerDemoApplication {
 
     public static void test() {
         KafkaQueue kafkaQueue = new KafkaQueue();
+        kafkaQueue.startProcess();
 
         for (int i = 0; i < 10; i++) {
             new Thread() {

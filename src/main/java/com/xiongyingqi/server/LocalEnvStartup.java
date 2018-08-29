@@ -19,7 +19,7 @@ import java.util.Properties;
  * @since 2016-11-19 00:10
  */
 //@Profile("local")
-@Component
+//@Component
 public class LocalEnvStartup implements InitializingBean {
     private static final Logger logger = LoggerFactory.getLogger(LocalEnvStartup.class);
     @Autowired

@@ -1,12 +1,13 @@
 package com.xiongyingqi.queue;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.producer.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * @author xiongyingqi
@@ -21,8 +22,34 @@ public class KafkaQueue {
     private String topic = "test";
     private String brokers = "127.0.0.1:9092";
     private String groupId = "test";
+    private BlockingQueue<Future<RecordMetadata>> blockingQueue = new LinkedBlockingQueue<>();
+    // Thread pool
+    private static ExecutorService executorService = new ThreadPoolExecutor(10, 10, 1000,
+            TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), new ThreadFactoryBuilder()
+            .setNameFormat("kafka-future-getter-%d").build());
+    private Thread futureThread;
 
-    private final ThreadLocal<Producer<String, String>> producer = new ThreadLocal<Producer<String, String>>(){
+    public void startProcess() {
+        if (futureThread != null) {
+            return;
+        }
+        futureThread = new Thread(() -> {
+            try {
+                while (true) {
+                    Future<RecordMetadata> poll = blockingQueue.take();
+                    RecordMetadata recordMetadata = poll.get();
+                    logger.info("recordMetadata: {} partition: {}", recordMetadata, recordMetadata.partition());
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+
+        });
+        futureThread.start();
+        System.out.println("Process started!!!");
+    }
+
+    private final ThreadLocal<Producer<String, String>> producer = new ThreadLocal<Producer<String, String>>() {
         @Override
         protected Producer<String, String> initialValue() {
             return createProducer();
@@ -50,6 +77,11 @@ public class KafkaQueue {
         Future<RecordMetadata> future = producer.get().send(record);
         if (future == null) {
             return false;
+        }
+        try {
+            blockingQueue.put(future);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
         return true;
     }
